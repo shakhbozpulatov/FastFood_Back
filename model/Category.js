@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const Joi = require("joi");
 
 const CategorySchema = new Schema({
   name: {
@@ -12,12 +13,21 @@ const CategorySchema = new Schema({
   },
   product: [
     {
-        type: Schema.Types.ObjectId,
-        ref: "Product"
-    }
-  ]
+      type: Schema.Types.ObjectId,
+      ref: "Product",
+    },
+  ],
 });
 
 const Category = mongoose.model("Category", CategorySchema);
 
+function validateCategory(category) {
+  const schema = Joi.object({
+    name: Joi.string().required(),
+  });
+
+  return schema.validate(category);
+}
+
 exports.Category = Category;
+exports.validate = validateCategory;

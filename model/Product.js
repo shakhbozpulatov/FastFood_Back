@@ -14,16 +14,17 @@ const ProductSchema = new Schema({
   remain_quantity: {
     type: Number,
   },
-  picture: {
-    type: Schema.Types.Buffer,
+  image: {
+    data: Buffer,
+    contentType: String,
   },
   price: {
     type: Schema.Types.Decimal128,
     required: true,
   },
   category_name: {
-    type: Schema.Types.ObjectId,
-    ref: "Category"
+    type: String,
+    required: true
   }
 });
 
@@ -35,6 +36,7 @@ function validateProduct(product) {
     quantity: Joi.number().required(),
     remain_quantity: Joi.number(),
     price: Joi.number().precision(3).required(),
+    category_name: Joi.string().required(),
   });
 
   return schema.validate(product);
