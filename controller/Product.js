@@ -1,49 +1,87 @@
-const { Product, validate } = require("../model/Product");
-const { Category } = require("../model/Category");
+const { productModel } = require("../model/Product");
 const fs = require("fs");
 
-const ADD_PRODUCT = (req, res) => {
-  try {
-    const { error } = validate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+class Product {
+  async getAllProduct(req, res) {
+    try {
+      let Products = await productModel
+        .find({})
+        .populate("pCategory", "_id cName")
+        .sort({ _id: -1 });
+      if (Products) {
+        return res.json({ Products });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
-    let newProduct = new Product({
-      name: req.body.name,
-      quantity: req.body.quantity,
-      remain_quantity: req.body.remain_quantity,
-      image: {
-        data: fs.readFileSync("uploads/" + req.file.filename),
-        contentType: "image/png",
-      },
-      price: req.body.price,
-      category_name: req.body.category_name,
-    });
+  async createProduct(req, res) {
+    try {
+      let { pName, pQuantity, pPrice, pCategory } = req.body;
+      let pImage;
+      let filePath;
 
-    newProduct
-      .save()
-      .then(() => {
-        Category.findOne(
-          { name: newProduct.category_name },
-          (err, category) => {
-            if (category) {
-              category.product.push(newProduct);
-              category.save();
-              res.status(201).json({
-                msg: "Product created successfullu",
-              });
-            }
+      // Validation
+      try {
+        if (!pName | !pQuantity | !pPrice | !pCategory) {
+          if (req.file) {
+            pImage = req.file.filename;
+            filePath = `./public/uploads/products/${pImage}`;
+            fs.unlink(filePath, (err) => {
+              if (err) {
+                return res.json({ error: err });
+              }
+            });
+            return res
+              .status(400)
+              .json({ error: "All filled must be required" });
           }
-        );
-        // return res.status(201).json({
-        //   msg: "Product created successfully!",
-        // });
-      })
-      .catch((err) => {
-        res.status(400).send(`Oops!. Product is not saved. Error: ${err}`);
-      });
-  } catch (error) {}
-};
+          return res.json({ msg: "All filled must be required" });
+        }
+        if (!req.file) {
+          pImage = req.file.filename;
+          filePath = `./public/uploads/products/${pImage}`;
+          fs.unlink(filePath, (err) => {
+            if (err) {
+              return res.json({ error: err });
+            }
+          });
+          return res.status(400).json({ error: "All filled must be required" });
+        }
+      } catch (error) {
+        return res.json({
+          error: `${error}`,
+          msg: "All filled must be required",
+        });
+      }
 
-module.exports = {
-  ADD_PRODUCT,
-};
+      let newProduct = new productModel({
+        pName,
+        pQuantity,
+        pImage: {
+          data: fs.readFileSync(
+            "./public/uploads/products/" + req.file.filename
+          ),
+          contentType: "image/png",
+        },
+        pPrice,
+        pCategory,
+      });
+
+      newProduct
+        .save()
+        .then(() => {
+          return res.status(201).json({
+            success: "Product created successfully!",
+          });
+        })
+        .catch((err) => {
+          res.status(400).send(`Oops!. Product is not saved. Error: ${err}`);
+        });
+    } catch (error) {}
+  }
+}
+
+const productsController = new Product();
+module.exports = productsController;

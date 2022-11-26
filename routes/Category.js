@@ -1,9 +1,24 @@
 const express = require("express");
 const router = express.Router();
-const category_controller = require("../controller/Category");
-const upload = require("../middleware/uploadFile")
+const categoryController = require("../controller/Category");
+const multer = require("multer");
 
-router.post("/addnew", upload.single("categoryImage"), category_controller.ADD_CATEGORY);
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./public/uploads/categories");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "_" + file.originalname);
+  },
+});
 
+const upload = multer({ storage: storage });
+
+router.get("/get-all-category", categoryController.getAllCategry);
+router.post(
+  "/create-category",
+  upload.single("cImage"),
+  categoryController.createCategory
+);
 
 module.exports = router;

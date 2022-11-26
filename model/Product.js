@@ -2,45 +2,35 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Joi = require("joi");
 
-const ProductSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
+const ProductSchema = new Schema(
+  {
+    pName: {
+      type: String,
+      required: true,
+    },
+    pQuantity: {
+      type: Number,
+      required: true,
+    },
+    pImage: {
+      data: Buffer,
+      contentType: String,
+    },
+    pPrice: {
+      type: Schema.Types.Decimal128,
+      required: true,
+    },
+    pCategory: {
+      type: mongoose.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
   },
-  quantity: {
-    type: Number,
-    required: true,
-  },
-  remain_quantity: {
-    type: Number,
-  },
-  image: {
-    data: Buffer,
-    contentType: String,
-  },
-  price: {
-    type: Schema.Types.Decimal128,
-    required: true,
-  },
-  category_name: {
-    type: String,
-    required: true
+  {
+    timestamps: true,
   }
-});
+);
 
-const Product = mongoose.model("Product", ProductSchema);
+const productModel = mongoose.model("Product", ProductSchema);
 
-function validateProduct(product) {
-  const schema = Joi.object({
-    name: Joi.string().required(),
-    quantity: Joi.number().required(),
-    remain_quantity: Joi.number(),
-    price: Joi.number().precision(3).required(),
-    category_name: Joi.string().required(),
-  });
-
-  return schema.validate(product);
-}
-
-exports.Product = Product;
-exports.validate = validateProduct;
+exports.productModel = productModel;

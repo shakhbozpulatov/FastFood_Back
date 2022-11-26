@@ -26,8 +26,10 @@ mongoose
 
 const categories = require("./routes/Category");
 const products = require("./routes/Product");
+const orders = require("./routes/Order");
 app.use("/api/categories", categories)
 app.use("/api/products", products)
+app.use("/api/orders", orders)
 
 const PORT = process.env.PORT || 5000;
 
